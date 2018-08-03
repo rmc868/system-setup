@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+bang='/usr/bin/env bash'
+
+#Documentation
+
+usage(){
+  echo "  Usage $(basename $0) [-h] [-s shebang] file ..."
+  echo "    -h			help"
+  echo '    -s shebang		specify shebang other than default (do not include #!)'
+  echo
+}
+
+help(){
+  echo
+  echo "chshebang -- changes the shebang in the first line of one or more files"
+  echo "  default shebang: #!/usr/bin/env bash"
+  echo "  chshebang can accept globs but will only do work on regular files"
+  echo
+  usage
+}
+
+#Input Validation/Parsing
+
+while getopts :hs: OPT; do
+  case "$OPT" in
+    h) help; exit 0						;;
+    s) bang="$OPTARG"						;;
+    ?) echo "Invalid Option: $OPTARG"; exit 1			;;
+    :) echo "Option $OPTARG requires an argument"; exit 1	;;
+    *) echo "Unknown Operation: $OPT / $OPTARG"; exit 1		;;
+  esac
+done
+shift $((OPTIND - 1))
+
+# MAIN SCRIPT
+
+for i in "$@"; do
+  if [[ -f "$i" ]]; then
+    first="$(cat $i | head -1)"
+    if [[ "${first#\#\!}" = "$bang" ]]; then
+      echo "File: $i"
+      echo "File left unchanged. Shebangs are the same"
+      echo -e "------------------------------\n"
+    else
+      cp "$i" "${i}.bkup"
+      echo "File: $i"
+      echo "Changing: $first"
+      sed -ri "s|(\#\!)${first#\#\!}|\1$bang|" "$i"
+      echo "New Shebang: $(cat "$i" | head -1)"
+      echo -e "------------------------------\n"
+    fi
+  fi
+done
+
+exit 0

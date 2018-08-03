@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+usage(){
+  echo "Usage: $(basename $0) [-h] file/dir ..."
+  echo
+  echo "abspathof will provide the absolute path for any number of files and/or directories"
+  echo
+}
+
+getopts :h OPT
+if [ $OPT = h ]; then
+  usage
+  exit 0
+fi
+shift $(($OPTIND - 1))
+
+for f in "$@"; do
+  if [ ! -e "$f" ]; then
+    echo "Nonexistent file or dir: $f"
+    echo "Please use only valid files or directories as arguments."
+    exit 1
+  fi
+done
+
+for f in "$@"; do
+  if [[ ! ( "$f" = "." || "$f" =~ (\.\./?)+ ) ]]; then
+    cd "$(dirname "$f")"
+    echo "$PWD/$(basename "$f")"
+  else
+    cd "$f"
+    echo "$PWD"
+  fi
+
+  cd - >/dev/null
+done

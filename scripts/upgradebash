@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+brew install bash
+
+echo -e "\n\n\n"
+echo "You will now have to enter password in order to modify the /etc/shells file"
+echo "Press Enter to continue..."
+echo
+read
+sudo bash -c 'tee -a /etc/shells <<< /usr/local/bin/bash > /dev/null'
+echo
+echo "/etc/shells/ modified"
+
+echo "You will now have to enter password in order to change default shell to latest version of bash"
+echo "Press Enter to continue..."
+read
+chsh -s "/usr/local/bin/bash"
+echo

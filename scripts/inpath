@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+usage(){
+  echo "Usage: $(basename $0) [-h] [-d dir]"
+}
+
+help(){
+  echo
+  echo "By default, inpath checks to see if the current working directory is in PATH. You can check a specific directory by using the correct option"
+  echo
+  echo "Options:"
+  echo	"-h		Show help"
+  echo	"-d dir		Check if dir is in PATH, instead of current working dir"
+}
+
+dir="$PWD"
+
+while getopts ":hd:" OPT; do
+  case $OPT in
+    h) help
+       exit 0				;;
+    d) dir="$(abspathof "$OPTARG")"	;;
+    \?) echo "Unknown option: $OPTARG"
+        exit 1				;;
+    :) echo "Missing Argument to option $OPTARG"
+       exit 1				;;
+    *) echo "Unknown Operation: $OPT / $OPTARG"
+       exit 2				;;
+  esac
+done
+shift $(($OPTIND - 1))
+
+IFStemp="$IFS"	IFS=":"
+
+echo
+
+for p in $PATH; do
+  if [ "$p" = "$dir" ]; then
+    echo "YES: $dir is in PATH"
+    echo
+    exit 0
+  fi
+done
+
+echo "NO: "$dir" is not in PATH."
+echo
+
+exit 1

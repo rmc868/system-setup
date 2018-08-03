@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+usage(){
+  echo "Usage: $(basename $0) [-h] [-i] [-d dir]"
+}
+
+help(){
+  usage
+  echo
+  echo "By default, addtopath permanently adds the current working directory to path. This behavior can be modified with the following options."
+  echo
+  echo "Options:"
+  echo "	-h		display Help"
+  echo "	-i		impermanently add to path (Must source script to affect calling shell)"
+  echo -e "	-d dir		add dir to path, instead of current working directory\n"
+}
+
+dir="$(pwd)"
+
+while getopts ":hid:" OPT; do
+  case $OPT in
+    h) help
+       exit 0				;;
+    i) imp=1				;;
+    d) dir="$(abspathof "$OPTARG")"	;;
+    \?) echo "Unknown option: $OPTARG"
+        exit 1				;;
+    :) echo "option -\"$OPTARG\" requires an argument"
+       exit 1				;;
+    *) echo "Unknown operation: $OPT / $OPTARG"
+       usage
+       exit 1				;; 
+  esac
+done
+shift $(($OPTIND - 1))
+unset OPTIND
+
+if [ -n "$imp" ]; then
+  export PATH="$PATH:$dir"
+  echo -e "\nThe following directory was impermanently added to path:\n$dir"
+  echo -e "\nNew path:\n$PATH\n\n"
+else
+  sed -i "/PATH/s|\"$|:$dir\"|" ~/.profile
+  echo -e "\nThe following directory was permanently added to path:\n$dir"
+  echo -e "\nNew path:\n$PATH\n\n"
+fi
